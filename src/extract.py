@@ -118,7 +118,7 @@ if __name__ == "__main__":
         file_path = Path("data/raw") / args.remove
         if file_path.exists():
             file_path.unlink()
-            print(f"✓ Removed {args.remove}")
+            print(f"Removed {args.remove}")
         else:
             print(f"Error: {args.remove} not found in data/raw/")
         exit()
