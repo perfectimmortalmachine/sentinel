@@ -1,6 +1,4 @@
 """
-FAERS Data Extraction Tool
-
 Usage:
     python src/extract.py                                      # Extract all JSON files to faers_flattened.csv
     python src/extract.py --file drug-event-0001-of-0031.json  # Extract specific file
