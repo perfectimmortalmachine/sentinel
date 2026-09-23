@@ -1,5 +1,17 @@
+# Usage #
+
+# All files
+# python src/extract.py
+
+# Specific file
+# python src/extract.py --file drug-event-0001-of-0031.json
+
+# Custom output
+# python src/extract.py --output data/raw/all_parts.csv
+
 import json
 import csv
+import argparse
 from pathlib import Path
 from typing import List, Dict
 
@@ -42,9 +54,16 @@ class FAERSExtractor:
         
         return flat
     
-    def extract_json_files(self) -> List[Dict]:
+    def extract_json_files(self, specific_file: str = None) -> List[Dict]:
         records = []
-        json_files = sorted(self.data_dir.glob('*.json'))
+        
+        if specific_file:
+            json_files = [self.data_dir / specific_file]
+            if not json_files[0].exists():
+                print(f"Error: {specific_file} not found in {self.data_dir}")
+                return []
+        else:
+            json_files = sorted(self.data_dir.glob('*.json'))
         
         print(f"Found {len(json_files)} JSON files")
         
@@ -54,7 +73,7 @@ class FAERSExtractor:
                 with open(json_file, 'r') as f:
                     data = json.load(f)
                     
-                res = data.get('res', [])
+                res = data.get('results', [])
                 print(f"  Found {len(res)} records")
             
                 for record in res:
@@ -76,7 +95,7 @@ class FAERSExtractor:
         
         output_path = Path(output_file)
         with open(output_path, 'w', newline='') as f:
-            writer = csv.DictWriter(f, fields=fields)
+            writer = csv.DictWriter(f, fieldnames=fields)
             writer.writeheader()
             writer.writerows(records)
         
@@ -84,6 +103,12 @@ class FAERSExtractor:
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Extract FAERS JSON files and flatten to CSV")
+    parser.add_argument('--file', type=str, default=None, help='Extract specific JSON file (e.g., drug-event-0001-of-0031.json). If not provided, extracts all.')
+    parser.add_argument('--output', type=str, default='data/raw/faers_flattened.csv', help='Output CSV file path')
+    
+    args = parser.parse_args()
+    
     extractor = FAERSExtractor()
-    records = extractor.extract_json_files()
-    extractor.export_as_csv(records)
+    records = extractor.extract_json_files(specific_file=args.file)
+    extractor.export_as_csv(records, output_file=args.output)
