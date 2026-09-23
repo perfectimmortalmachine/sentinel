@@ -1,19 +1,26 @@
-# Usage #
+"""
+FAERS Data Extraction Tool
 
-# All files
-# python src/extract.py
+Usage:
+    python src/extract.py                                      # Extract all JSON files to faers_flattened.csv
+    python src/extract.py --file drug-event-0001-of-0031.json  # Extract specific file
+    python src/extract.py --timestamp                          # Extract all, append timestamp to filename (in 24 hour time)
+    python src/extract.py --output data/raw/custom.csv         # Extract all to custom path
+    python src/extract.py --remove faers_flattened.csv         # Remove file from data/raw
 
-# Specific file
-# python src/extract.py --file drug-event-0001-of-0031.json
-
-# Custom output
-# python src/extract.py --output data/raw/all_parts.csv
+Options:
+    --file FILENAME         Extract specific JSON file from data/raw/
+    --output PATH           Custom output CSV path
+    --timestamp             Append timestamp (YYYY-MM-DD_HH-MM AM/PM) to filename
+    --remove FILENAME       Delete file from data/raw/
+"""
 
 import json
 import csv
 import argparse
 from pathlib import Path
 from typing import List, Dict
+from datetime import datetime
 
 class FAERSExtractor:
     def __init__(self, data_dir: str = "data/raw"):
@@ -23,14 +30,12 @@ class FAERSExtractor:
         """Flatten nested JSON record into flat dictionary"""
         flat = {}
         
-        # Top-level fields
         flat['safetyreportid'] = record.get('safetyreportid')
         flat['receivedate'] = record.get('receivedate')
         flat['transmissiondate'] = record.get('transmissiondate')
         flat['serious'] = record.get('serious')
         flat['reporttype'] = record.get('reporttype')
         
-        # Seriousness flags
         flat['seriousness_death'] = record.get('seriousnessdeath')
         flat['seriousness_lifethreatening'] = record.get('seriousnesslifethreatening')
         flat['seriousness_hospitalization'] = record.get('seriousnesshospitalization')
@@ -38,13 +43,11 @@ class FAERSExtractor:
         flat['seriousness_congenital'] = record.get('seriousnesscongenitalanomali')
         flat['seriousness_other'] = record.get('seriousnessother')
         
-        # Patient fields (nested)
         patient = record.get('patient', {})
         flat['patient_age'] = patient.get('patientonsetage')
         flat['patient_age_unit'] = patient.get('patientonsetageunit')
         flat['patient_sex'] = patient.get('patientsex')
         
-        # Source fields (nested)
         primary_source = record.get('primarysource', {})
         flat['reporter_country'] = primary_source.get('reportercountry')
         flat['reporter_qualification'] = primary_source.get('qualification')
@@ -105,10 +108,29 @@ class FAERSExtractor:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Extract FAERS JSON files and flatten to CSV")
     parser.add_argument('--file', type=str, default=None, help='Extract specific JSON file (e.g., drug-event-0001-of-0031.json). If not provided, extracts all.')
-    parser.add_argument('--output', type=str, default='data/raw/faers_flattened.csv', help='Output CSV file path')
+    parser.add_argument('--output', type=str, default=None, help='Output CSV file path')
+    parser.add_argument('--timestamp', action='store_true', help='Append timestamp to output filename')
+    parser.add_argument('--remove', type=str, default=None, help='Remove file from data/raw (e.g., --remove faers_flattened.csv)')
     
     args = parser.parse_args()
     
+    if args.remove:
+        file_path = Path("data/raw") / args.remove
+        if file_path.exists():
+            file_path.unlink()
+            print(f"✓ Removed {args.remove}")
+        else:
+            print(f"Error: {args.remove} not found in data/raw/")
+        exit()
+    
+    output_file = args.output
+    if not output_file:
+        if args.timestamp:
+            ts = datetime.now().strftime('%Y-%m-%d_%H-%M')
+            output_file = f"data/raw/faers_flattened_{ts}.csv"
+        else:
+            output_file = "data/raw/faers_flattened.csv"
+    
     extractor = FAERSExtractor()
     records = extractor.extract_json_files(specific_file=args.file)
-    extractor.export_as_csv(records, output_file=args.output)
+    extractor.export_as_csv(records, output_file=output_file)
