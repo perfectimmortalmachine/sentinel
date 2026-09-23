@@ -6,7 +6,7 @@ Usage:
 Process:
     1. Validates all records using validate.py
     2. Creates database schema from schema.sql
-    3. Loads transformed data into normalized SQLite tables
+    3. Loads transformed data into normalised SQLite tables
     4. Logs validation issues to validation_log table
     5. Generates database statistics report
 
