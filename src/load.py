@@ -41,7 +41,7 @@ class FAERSLoader:
         
         self.cursor.executescript(sql)
         self.conn.commit()
-        print("✓ Schema created")
+        print("Schema created")
     
     def load_from_csv(self, csv_file: str = "data/raw/faers_transformed.csv"):
         records_loaded = 0
@@ -111,7 +111,7 @@ class FAERSLoader:
                     print(f"Skipped record {row.get('safetyreportid')}: {e}")
         
         self.conn.commit()
-        print(f"✓ Loaded {records_loaded} records, skipped {records_skipped}")
+        print(f"Loaded {records_loaded} records, skipped {records_skipped}")
     
     def log_validation_issues(self, validation_results: Dict):
         for issue_record in validation_results.get('issues_by_record', []):
@@ -126,7 +126,7 @@ class FAERSLoader:
                 """, (safetyreportid, issue, 'warning'))
         
         self.conn.commit()
-        print(f"✓ Logged {len(validation_results.get('issues_by_record', []))} validation issues")
+        print(f"Logged {len(validation_results.get('issues_by_record', []))} validation issues")
     
     def generate_db_stats(self) -> str:
         stats = f"""
@@ -145,7 +145,8 @@ RECORD COUNTS
         
         self.cursor.execute("SELECT serious, COUNT(*) FROM adverse_events GROUP BY serious ORDER BY serious")
         for serious, count in self.cursor.fetchall():
-            stats += f"  {serious:20s}: {count:>6,} ({100*count/total:.1f}%)\n"
+            serious_label = str(serious) if serious else 'Unknown'
+            stats += f"  {serious_label:20s}: {count:>6,} ({100*count/total:.1f}%)\n"
         
         self.cursor.execute("SELECT COUNT(*) FROM validation_log")
         issues_logged = self.cursor.fetchone()[0]
@@ -176,7 +177,7 @@ RECORD COUNTS
     def close(self):
         if self.conn:
             self.conn.close()
-            print(f"✓ Database connection closed")
+            print(f"Database connection closed")
 
 
 if __name__ == "__main__":
@@ -204,6 +205,6 @@ if __name__ == "__main__":
     
     with open('data/processed/db_stats.txt', 'w') as f:
         f.write(stats)
-    print("✓ Database statistics saved to data/processed/db_stats.txt")
+    print("Database statistics saved to data/processed/db_stats.txt")
     
     loader.close()

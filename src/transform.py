@@ -101,7 +101,7 @@ class FAERSTransformer:
             transformed = self.transform_record(record)
             transformed_records.append(transformed)
         
-        print(f"✓ Transformed {len(transformed_records)} records")
+        print(f"Transformed {len(transformed_records)} records")
         return transformed_records
     
     def export_as_csv(self, records: List[Dict], output_file: str = "data/raw/faers_transformed.csv"):
