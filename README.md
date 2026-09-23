@@ -44,8 +44,8 @@ python src/load.py
 
 1. Extract: Parse JSON from FDA opendata API → flatten to CSV
 2. Validate: Check 8 compliance rules, flag issues
-3. Transform: Standardize dates and codes → human-readable format
-4. Load: Insert into normalized SQLite database with audit trail
+3. Transform: Standardise dates and codes → human-readable format
+4. Load: Insert into normalised SQLite database with audit trail
 
 ## Data Quality
 
