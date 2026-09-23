@@ -1,3 +1,12 @@
+"""
+Usage:
+    python src/validate.py                                      # validate all JSON files to faers_flattened.csv
+    python src/validate.py --csv                                # validate from a specific CSV file not named faers_flattened.csv
+
+Options:
+    --csv            read from a specific file that has a timestamp appended on the file name (e.g., faers_flattened_2026-09-23_15-09.csv)
+"""
+
 import csv
 from pathlib import Path
 from typing import List, Dict, Tuple
